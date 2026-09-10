@@ -138,3 +138,117 @@ class DeepSeekLLMProvider(LLMProvider):
             kwargs["response_format"] = {"type": "json_object"}
         response = await self._client.chat.completions.create(**kwargs)
         return response.choices[0].message.content
+class MockLLMProvider(LLMProvider):
+    """Mock LLM provider for local testing without an API key."""
+
+    def __init__(self, model: str = "mock-llm"):
+        self._model = model
+
+    @property
+    def default_model(self) -> str:
+        return self._model
+
+    async def chat_completion(
+        self,
+        system: str,
+        user: str,
+        *,
+        model: str | None = None,
+        response_json: bool = True,
+    ) -> str:
+
+        if response_json:
+            return json.dumps({
+                "title": "Mock Generated Film",
+
+                "scenes": [
+                    {
+                        "id": "S1",
+                        "description": (
+                            "A detective walks through a dark city street "
+                            "at night while searching for clues."
+                        ),
+                        "complexity": 3,
+                        "scene_type": "landscape",
+                        "estimated_duration_sec": 5,
+                        "dependencies": [],
+                        "assets_required": [
+                            "character_detective",
+                            "location_city_street"
+                        ]
+                    },
+                    {
+                        "id": "S2",
+                        "description": (
+                            "The detective investigates a mysterious "
+                            "location and searches for evidence."
+                        ),
+                        "complexity": 5,
+                        "scene_type": "action",
+                        "estimated_duration_sec": 5,
+                        "dependencies": ["S1"],
+                        "assets_required": [
+                            "character_detective",
+                            "location_mysterious_location"
+                        ]
+                    },
+                    {
+                        "id": "S3",
+                        "description": (
+                            "The detective discovers an important clue "
+                            "and examines it carefully."
+                        ),
+                        "complexity": 3,
+                        "scene_type": "dialogue",
+                        "estimated_duration_sec": 5,
+                        "dependencies": ["S2"],
+                        "assets_required": [
+                            "character_detective",
+                            "prop_clue"
+                        ]
+                    }
+                ],
+
+                "assets": [
+                    {
+                        "id": "character_detective",
+                        "type": "character",
+                        "description": (
+                            "A professional detective wearing a dark coat "
+                            "and carrying a notebook."
+                        )
+                    },
+                    {
+                        "id": "location_city_street",
+                        "type": "location",
+                        "description": (
+                            "A dark urban street at night with street "
+                            "lights and wet pavement."
+                        )
+                    },
+                    {
+                        "id": "location_mysterious_location",
+                        "type": "location",
+                        "description": (
+                            "A mysterious abandoned location with "
+                            "dim lighting and old surroundings."
+                        )
+                    },
+                    {
+                        "id": "prop_clue",
+                        "type": "prop",
+                        "description": (
+                            "A small mysterious piece of evidence "
+                            "discovered by the detective."
+                        )
+                    }
+                ],
+
+                "dag": {
+                    "S1": ["S2"],
+                    "S2": ["S3"],
+                    "S3": []
+                }
+            })
+
+        return "Mock LLM response"
